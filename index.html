@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pink Envelope</title>
+    <link href="https://fonts.googleapis.com/css2?family=Handlee&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-env: #FFB7C5;
+            --color-env2: #ff9aad;
+            --color-flap: #ff8da1;
+            --color-bg: #ed7fca;
+            --color-heart: #ff85a2;
+            --color-sparkle: #fff;
+            --wax-red: #c04040;
+        }
+
+        #envelope {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            margin: 0 auto;
+            top: 150px;
+            background-color: var(--color-flap);
+            box-shadow: 0 4px 20px rgba(0,0,0,.1);
+            cursor: pointer;
+        }
+
+        .front {
+            position: absolute;
+            width: 0;
+            height: 0;
+            z-index: 3;
+        }
+
+        .flap {
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-bottom: 82px solid transparent;
+            border-top: 98px solid var(--color-flap);
+            transform-origin: top;
+            pointer-events: none;
+        }
+
+        .pocket {
+            border-left: 140px solid var(--color-env);
+            border-right: 140px solid var(--color-env);
+            border-bottom: 90px solid var(--color-env2);
+            border-top: 90px solid transparent;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        .letter {
+            position: relative;
+            background-color: #e0d9dd;
+            width: 90%;
+            margin: 0 auto;
+            height: 90%;
+            top: 5%;
+            border-radius: 6px;
+            box-shadow: 0 2px 26px rgba(0,0,0,.08);
+            padding: 15px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .letter:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-image: linear-gradient(180deg, 
+                rgba(255,255,255,0.00) 25%, 
+                rgba(255,231,236,0.70) 55%, 
+                rgba(255,231,236,1.00) 100%);
+            pointer-events: none;
+        }
+
+        .message {
+            position: relative;
+            z-index: 2;
+            font-family: 'Handlee', cursive;
+            color: #d46a84;
+            text-align: center;
+            line-height: 1.4;
+            padding: 5px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .message p {
+            margin: 10px 0;
+            font-size: 1.4em;
+            text-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+        
+        .lyrics {
+            display: none;
+            font-size: 1.2em;
+            line-height: 1.5;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+            max-height: 130px;
+            overflow-y: auto;
+        }
+        
+        .lyric-page {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .lyric-page.active {
+            display: block;
+            opacity: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .envlope-wrapper {
+            height: 380px;
+            margin-top: 50px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .open .flap {
+            transform: rotateX(180deg);
+            transition: transform 0.4s ease, z-index 0.6s;
+            z-index: 1;
+        }
+
+        .close .flap {
+            transform: rotateX(0deg);
+            transition: transform 0.4s 0.6s ease, z-index 1s;
+            z-index: 5;
+        }
+
+        .close .letter {
+            transform: translateY(0px); 
+            transition: transform 0.4s ease, z-index 1s;
+            z-index: 1;
+        }
+
+        .open .letter {
+            transform: translateY(-60px) rotate(-2deg);
+            transition: transform 0.4s 0.6s ease, z-index 0.6s;
+            z-index: 2;
+        }
+
+        .letter-corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffd1dc;
+            border-radius: 5px;
+            z-index: 3;
+        }
+        .corner-tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .corner-br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+        .hearts, .sparkles {
+            position: absolute;
+            top: 90px;
+            left: 0;
+            right: 0;
+            z-index: 2;
+        }
+
+        .heart, .sparkle {
+            position: absolute;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .heart:before,
+        .heart:after {
+            content: "";
+            position: absolute;
+            left: 25px;
+            top: 0;
+            width: 25px;
+            height: 40px;
+            background: var(--color-heart);
+            border-radius: 25px 25px 0 0;
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+        }
+
+        .heart:after {
+            left: 0;
+            transform: rotate(45deg);
+            transform-origin: 100% 100%;
+        }
+
+        .sparkle {
+            width: 8px;
+            height: 8px;
+            background: var(--color-sparkle);
+            border-radius: 50%;
+            animation: sparkleTwinkle 1s infinite;
+        }
+
+        .close .heart,
+        .close .sparkle {
+            opacity: 0;
+            animation: none;
+        }
+
+        .a1 { left: 20%; transform: scale(0.6); animation: slideUp 4s linear infinite, sideSway 2s ease-in-out infinite alternate; }
+        .a2 { left: 55%; animation: slideUp 5s linear infinite, sideSway 4s ease-in-out infinite alternate; }
+        .a3 { left: 10%; transform: scale(0.8); animation: slideUp 7s linear infinite, sideSway 2s ease-in-out infinite alternate; }
+
+        .s1 { left: 30%; animation: sparkleUp 3s linear infinite; }
+        .s2 { left: 60%; animation: sparkleUp 4s linear infinite; }
+        .s3 { left: 45%; animation: sparkleUp 5s linear infinite; }
+
+        @keyframes slideUp {
+            0% { top: 0; }
+            100% { top: -600px; }
+        }
+
+        @keyframes sideSway {
+            0% { margin-left: 0; }
+            50% { margin-left: 50px; }
+            100% { margin-left: 0; }
+        }
+
+        @keyframes sparkleUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-500px) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes sparkleTwinkle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+        }
+
+        body {
+            background-color: var(--color-bg);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .controls button {
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background-color: var(--color-env);
+            border: 2px solid var(--color-env2);
+            border-radius: 20px;
+            color: white;
+            padding: 12px 25px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            font-family: Arial, sans-serif;
+        }
+
+        .controls button:hover {
+            background-color: var(--color-env2);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 7px 25px rgba(0,0,0,0.2);
+        }
+
+        .title-text {
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .open .title-text {
+            opacity: 0;
+            display: none;
+        }
+
+        .open .lyrics {
+            display: block;
+            opacity: 1;
+        }
+        
+        .page-indicator {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.8em;
+            color: #d46a84;
+            opacity: 0.7;
+        }
+        
+        #nextBtn {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="envlope-wrapper">
+        <div id="envelope" class="close">
+            <div class="wax-seal"></div>
+            <div class="front flap"></div>
+            <div class="front pocket"></div>
+            <div class="letter">
+                <div class="letter-corner corner-tl"></div>
+                <div class="letter-corner corner-br"></div>
+                <div class="message">
+                    <div class="lyrics">
+                        <div class="lyric-page active" id="page1">
+                            <p>hi kayla esabelia</p>
+                            <div class="page-indicator">1/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page2">
+                            <p>happy birthday</p>
+                            <div class="page-indicator">2/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page3">
+                            <p>and happy anniversary</p>
+                            <div class="page-indicator">3/23</div>
+                        </div>
+
+                        <div class="lyric-page" id="page4">
+                            <p>makasi untuk semuanya</p>
+                            <div class="page-indicator">4/23</div>
+                        </div>
+
+                        <div class="lyric-page" id="page5">
+                            <p>atau mungkin </p>
+                            <div class="page-indicator">5/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page6">
+                            <p>untuk 1 tahun ini</p>
+                            <div class="page-indicator">6/23</div>
+                        </div>
+
+                        <div class="lyric-page" id="page7">
+                            <p>kita udah banyak</p>
+                            <div class="page-indicator">7/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page8">
+                            <p>lewatin banyak hal</p>
+                            <div class="page-indicator">8/23</div>
+                        </div>
+
+                        <div class="lyric-page" id="page9">
+                            <p>makasi selalu kuat</p>
+                            <div class="page-indicator">9/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page10">
+                            <p>dan mau bertahan</p>
+                            <div class="page-indicator">10/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page11">
+                            <p>sama aku, kayla</p>
+                            <div class="page-indicator">11/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page12">
+                            <p>aku bener bener sayang kamu</p>
+                            <div class="page-indicator">12/23</div>
+                        </div>
+
+                        <div class="lyric-page" id="page13">
+                            <p>maaf kalo aku sering </p>
+                            <div class="page-indicator">13/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page14">
+                            <p>ngebuat kamu nangis</p>
+                            <div class="page-indicator">14/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page15">
+                            <p>atau ngerasa sendiri</p>
+                            <div class="page-indicator">15/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page16">
+                            <p>sekali lagi</p>
+                            <div class="page-indicator">16/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page17">
+                            <p>happy birthday kayla</p>
+                            <div class="page-indicator">17/23</div>
+                        </div>
+                        
+                        <div class="lyric-page" id="page18">
+                            <p>i love you soo much</p>
+                            <div class="page-indicator">18/23</div>
+                        </div>
+
+                        
+                   
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hearts">
+                <div class="heart a1"></div>
+                <div class="heart a2"></div>
+                <div class="heart a3"></div>
+            </div>
+            <div class="sparkles">
+                <div class="sparkle s1"></div>
+                <div class="sparkle s2"></div>
+                <div class="sparkle s3"></div>
+            </div>
+        </div>
+    </div>
+    <div class="controls">
+        <button id="openBtn">Open</button>
+        <button id="resetBtn">Close</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const envelope = $('#envelope');
+            const openBtn = $("#openBtn");
+            const nextBtn = $("#nextBtn");
+            const resetBtn = $("#resetBtn");
+            
+            let currentPage = 1;
+            const totalPages = 23; // Sekarang ada 18 halaman lirik
+            let isOpen = false;
+
+            envelope.on('click', handleEnvelope);
+            openBtn.on('click', handleEnvelope);
+            resetBtn.on('click', resetEnvelope);
+            nextBtn.on('click', nextLyric);
+
+            function handleEnvelope() {
+                if (!isOpen) {
+                    openEnvelope();
+                } else {
+                    nextLyric();
+                }
+            }
+            
+            function openEnvelope() {
+                envelope.removeClass("close").addClass("open");
+                isOpen = true;
+                
+                // Ubah teks tombol dan tampilkan tombol next
+                openBtn.hide();
+                nextBtn.show().text("Next");
+            }
+            
+            function nextLyric() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateActivePage();
+                    
+                    // Ubah teks tombol jika di halaman terakhir
+                    if (currentPage === totalPages) {
+                        nextBtn.text("Back");
+                    }
+                } else {
+                    // Kembali ke halaman pertama jika sudah di halaman terakhir
+                    currentPage = 1;
+                    updateActivePage();
+                    nextBtn.text("Next");
+                }
+            }
+            
+            function updateActivePage() {
+                $(".lyric-page").removeClass("active");
+                $("#page" + currentPage).addClass("active");
+            }
+            
+            function resetEnvelope() {
+                envelope.removeClass("open").addClass("close");
+                isOpen = false;
+                
+                // Kembalikan tombol ke keadaan awal
+                setTimeout(function() {
+                    currentPage = 1;
+                    updateActivePage();
+                    
+                    openBtn.show();
+                    nextBtn.hide();
+                }, 600);
+            }
+        });
+    </script>
+</body>
+</html>
